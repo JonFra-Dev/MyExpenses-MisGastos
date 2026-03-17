@@ -1,0 +1,25 @@
+{
+    "categorias": [
+        { "nombre": "Alimentación", "emoji": "🍔", "color": "#E08030" },
+        { "nombre": "Arriendo",     "emoji": "🏠", "color": "#5B8FD4" },
+        { "nombre": "Servicios",    "emoji": "💡", "color": "#E0C030" },
+        { "nombre": "Transporte",   "emoji": "🚗", "color": "#6B8F5B" },
+        { "nombre": "Salud",        "emoji": "💊", "color": "#D46B6B" },
+        { "nombre": "Educación",    "emoji": "📚", "color": "#7B6BD4" },
+        { "nombre": "Diversión",    "emoji": "🎉", "color": "#D46BAD" },
+        { "nombre": "Ropa",         "emoji": "👕", "color": "#6BD4C8" },
+        { "nombre": "Tecnología",   "emoji": "📱", "color": "#4A4A4A" },
+        { "nombre": "Otros",        "emoji": "📦", "color": "#A08060" }
+    ],
+    "frases": [
+        "Pequeños registros, grandes decisiones.",
+        "Lo que no mides, no puedes mejorar.",
+        "Un presupuesto es decirle a tu dinero a dónde ir.",
+        "El control financiero empieza con la consciencia.",
+        "Registra hoy, ahorra mañana."
+    ],
+    "config_default": {
+        "presupuesto": 0,
+        "umbral_alerta": 80
+    }
+}

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MisGastos | Control Financiero Personal</title>
+    <link rel="stylesheet" href="gastos_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header id="navbar">
+    <div class="nav-inner">
+        <div class="logo">💰 MisGastos</div>
+        <nav>
+            <a href="#resumen"     class="nav-link">Resumen</a>
+            <a href="#formulario"  class="nav-link">Registrar</a>
+            <a href="#historial"   class="nav-link">Historial</a>
+            <button id="btnPresupuesto" class="btn-gold-sm">⚙️ Presupuesto</button>
+        </nav>
+        <button id="menuToggle" class="menu-btn">☰</button>
+    </div>
+    <div id="mobileMenu" style="display:none;">
+        <a href="#resumen">Resumen</a>
+        <a href="#formulario">Registrar gasto</a>
+        <a href="#historial">Historial</a>
+    </div>
+</header>
+
+<!-- ===== ALERTA DE PRESUPUESTO ===== -->
+<div id="alertaBanner" class="alerta-banner" style="display:none;">
+    <span id="alertaTexto"></span>
+    <button onclick="$('#alertaBanner').slideUp(300)">✕</button>
+</div>
+
+<!-- ===== RESUMEN ===== -->
+<section id="resumen">
+    <div class="section-title-row">
+        <h2>Resumen del mes</h2>
+        <span id="mesActual" class="mes-badge"></span>
+    </div>
+
+    <!-- Tarjetas principales -->
+    <div class="cards-top">
+        <div class="card card-ingreso">
+            <p class="card-label">Presupuesto mensual</p>
+            <p class="card-valor" id="cardIngreso">$0</p>
+            <span class="card-hint">Ingreso configurado</span>
+        </div>
+        <div class="card card-gasto">
+            <p class="card-label">Total gastado</p>
+            <p class="card-valor" id="cardGasto">$0</p>
+            <span class="card-hint">Este mes</span>
+        </div>
+        <div class="card card-saldo" id="cardSaldoBox">
+            <p class="card-label">Disponible</p>
+            <p class="card-valor" id="cardSaldo">$0</p>
+            <span class="card-hint" id="cardSaldoHint">Puedes seguir gastando</span>
+        </div>
+    </div>
+
+    <!-- Barra de progreso del presupuesto -->
+    <div class="presupuesto-bar-wrap">
+        <div class="bar-labels">
+            <span>Uso del presupuesto</span>
+            <span id="barPct">0%</span>
+        </div>
+        <div class="bar-track">
+            <div class="bar-fill" id="barFill" style="width:0%"></div>
+        </div>
+    </div>
+
+    <!-- Resumen por categorías -->
+    <h3 class="sub-title">Por categoría</h3>
+    <div id="resumenCategorias" class="categorias-lista">
+        <p class="empty-msg">Aún no hay gastos registrados este mes.</p>
+    </div>
+</section>
+
+<!-- ===== FORMULARIO ===== -->
+<section id="formulario">
+    <h2>Registrar gasto</h2>
+    <form id="formGasto" class="form-card">
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="inp-desc">Descripción *</label>
+                <input type="text" id="inp-desc" placeholder="Ej: Mercado semanal" maxlength="60" />
+            </div>
+            <div class="form-group">
+                <label for="inp-monto">Monto *</label>
+                <div class="input-prefix">
+                    <span>$</span>
+                    <input type="number" id="inp-monto" placeholder="0" min="1" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="inp-categoria">Categoría *</label>
+                <select id="inp-categoria">
+                    <option value="">-- Selecciona --</option>
+                    <option value="Alimentación">🍔 Alimentación</option>
+                    <option value="Arriendo">🏠 Arriendo / Vivienda</option>
+                    <option value="Servicios">💡 Servicios públicos</option>
+                    <option value="Transporte">🚗 Transporte</option>
+                    <option value="Salud">💊 Salud</option>
+                    <option value="Educación">📚 Educación</option>
+                    <option value="Diversión">🎉 Diversión / Ocio</option>
+                    <option value="Ropa">👕 Ropa</option>
+                    <option value="Tecnología">📱 Tecnología</option>
+                    <option value="Otros">📦 Otros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="inp-fecha">Fecha *</label>
+                <input type="date" id="inp-fecha" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inp-nota">Nota (opcional)</label>
+            <input type="text" id="inp-nota" placeholder="Detalle adicional..." maxlength="100" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-gold">➕ Agregar gasto</button>
+            <button type="button" class="btn-ghost" id="btnLimpiarForm">Limpiar</button>
+        </div>
+    </form>
+</section>
+
+<!-- ===== HISTORIAL ===== -->
+<section id="historial">
+    <div class="section-title-row">
+        <h2>Historial de gastos</h2>
+        <div class="historial-actions">
+            <select id="filtroCategoria" class="filtro-select">
+                <option value="todas">Todas las categorías</option>
+                <option value="Alimentación">🍔 Alimentación</option>
+                <option value="Arriendo">🏠 Arriendo</option>
+                <option value="Servicios">💡 Servicios</option>
+                <option value="Transporte">🚗 Transporte</option>
+                <option value="Salud">💊 Salud</option>
+                <option value="Educación">📚 Educación</option>
+                <option value="Diversión">🎉 Diversión</option>
+                <option value="Ropa">👕 Ropa</option>
+                <option value="Tecnología">📱 Tecnología</option>
+                <option value="Otros">📦 Otros</option>
+            </select>
+            <button id="btnExportar" class="btn-ghost-sm">📋 Copiar resumen</button>
+            <button id="btnEliminarTodo" class="btn-danger-sm">🗑️ Vaciar</button>
+        </div>
+    </div>
+
+    <div id="listaGastos" class="lista-transacciones">
+        <p class="empty-msg">No hay gastos registrados aún.</p>
+    </div>
+
+    <p id="totalFiltrado" class="total-filtrado" style="display:none;"></p>
+</section>
+
+<!-- ===== MODAL PRESUPUESTO ===== -->
+<div id="modalPresupuesto" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-box">
+        <button class="modal-close">✕</button>
+        <h3>⚙️ Configurar presupuesto</h3>
+        <p class="modal-desc">Define cuánto dinero tienes disponible este mes. Recibirás alertas cuando te acerques al límite.</p>
+
+        <div class="form-group">
+            <label>Ingreso / Presupuesto mensual</label>
+            <div class="input-prefix">
+                <span>$</span>
+                <input type="number" id="inp-presupuesto" placeholder="Ej: 3000000" min="1" />
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top:1rem;">
+            <label>Alerta cuando llegue al <span id="pctLabel">80</span>% del presupuesto</label>
+            <input type="range" id="inp-umbral" min="50" max="95" value="80" step="5"
+                   oninput="document.getElementById('pctLabel').textContent=this.value" />
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-gold" id="btnGuardarPresupuesto">Guardar</button>
+            <button class="btn-ghost modal-close-btn">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast" style="display:none;"></div>
+
+<!-- SCROLL TOP -->
+<button id="scrollTop" style="display:none;">↑</button>
+
+<footer>
+    <p>MisGastos · Control financiero personal · JF.dev <span id="fyear"></span></p>
+</footer>
+
+<script src="gastos_script.js"></script>
+</body>
+</html>
