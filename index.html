@@ -3,205 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MisGastos | Control Financiero Personal</title>
-    <link rel="stylesheet" href="gastos_style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>FinanzasMaestro | Tu Plan Financiero Personal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body>
 
-<!-- ===== HEADER ===== -->
+<!-- ===== NAVBAR ===== -->
 <header id="navbar">
-    <div class="nav-inner">
-        <div class="logo">💰 MisGastos</div>
-        <nav>
-            <a href="#resumen"     class="nav-link">Resumen</a>
-            <a href="#formulario"  class="nav-link">Registrar</a>
-            <a href="#historial"   class="nav-link">Historial</a>
-            <button id="btnPresupuesto" class="btn-gold-sm">⚙️ Presupuesto</button>
-        </nav>
-        <button id="menuToggle" class="menu-btn">☰</button>
-    </div>
-    <div id="mobileMenu" style="display:none;">
-        <a href="#resumen">Resumen</a>
-        <a href="#formulario">Registrar gasto</a>
-        <a href="#historial">Historial</a>
+    <nav>
+        <div class="logo">💰 FinanzasMaestro</div>
+        <ul class="nav-links">
+            <li><a href="#inicio" class="nav-link">Inicio</a></li>
+            <li><a href="#asesores" class="nav-link">Asesores</a></li>
+            <li><a href="#planificador" class="nav-link btn-nav">Comenzar Plan</a></li>
+        </ul>
+        <button id="menuToggle" class="menu-toggle">☰</button>
+    </nav>
+    <div id="mobileMenu" class="mobile-menu" style="display:none;">
+        <a href="#inicio">Inicio</a>
+        <a href="#asesores">Asesores</a>
+        <a href="#planificador" style="color:var(--gold); font-weight:700;">→ Comenzar Plan</a>
     </div>
 </header>
 
-<!-- ===== ALERTA DE PRESUPUESTO ===== -->
-<div id="alertaBanner" class="alerta-banner" style="display:none;">
-    <span id="alertaTexto"></span>
-    <button onclick="$('#alertaBanner').slideUp(300)">✕</button>
-</div>
-
-<!-- ===== RESUMEN ===== -->
-<section id="resumen">
-    <div class="section-title-row">
-        <h2>Resumen del mes</h2>
-        <span id="mesActual" class="mes-badge"></span>
-    </div>
-
-    <!-- Tarjetas principales -->
-    <div class="cards-top">
-        <div class="card card-ingreso">
-            <p class="card-label">Presupuesto mensual</p>
-            <p class="card-valor" id="cardIngreso">$0</p>
-            <span class="card-hint">Ingreso configurado</span>
+<!-- ===== HERO ===== -->
+<section id="inicio">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-inner">
+        <div class="hero-eyebrow">📊 Basado en Dave Ramsey · Warren Buffett · Robert Kiyosaki</div>
+        <h1>Toma el control de<br><span class="hero-gradient">tu futuro financiero</span></h1>
+        <p class="hero-sub">Responde unas preguntas simples y obtén un plan personalizado: elimina deudas, crea tu fondo de emergencia, ahorra e invierte como los grandes.</p>
+        <div class="hero-ctas">
+            <a href="#planificador" class="btn-gold" id="btnEmpezar">Crear mi plan ahora →</a>
+            <a href="#asesores" class="btn-outline">Conocer metodología</a>
         </div>
-        <div class="card card-gasto">
-            <p class="card-label">Total gastado</p>
-            <p class="card-valor" id="cardGasto">$0</p>
-            <span class="card-hint">Este mes</span>
+        <div class="hero-stats">
+            <div class="hstat"><span class="hnum" data-count="7">0</span><span>Pasos del plan</span></div>
+            <div class="hstat"><span class="hnum" data-count="100">0</span><span>% Personalizado</span></div>
+            <div class="hstat"><span class="hnum" data-count="3">0</span><span>Expertos mundiales</span></div>
         </div>
-        <div class="card card-saldo" id="cardSaldoBox">
-            <p class="card-label">Disponible</p>
-            <p class="card-valor" id="cardSaldo">$0</p>
-            <span class="card-hint" id="cardSaldoHint">Puedes seguir gastando</span>
-        </div>
-    </div>
-
-    <!-- Barra de progreso del presupuesto -->
-    <div class="presupuesto-bar-wrap">
-        <div class="bar-labels">
-            <span>Uso del presupuesto</span>
-            <span id="barPct">0%</span>
-        </div>
-        <div class="bar-track">
-            <div class="bar-fill" id="barFill" style="width:0%"></div>
-        </div>
-    </div>
-
-    <!-- Resumen por categorías -->
-    <h3 class="sub-title">Por categoría</h3>
-    <div id="resumenCategorias" class="categorias-lista">
-        <p class="empty-msg">Aún no hay gastos registrados este mes.</p>
     </div>
 </section>
 
-<!-- ===== FORMULARIO ===== -->
-<section id="formulario">
-    <h2>Registrar gasto</h2>
-    <form id="formGasto" class="form-card">
+<!-- ===== ASESORES ===== -->
+<section id="asesores">
+    <div class="section-label">Metodología probada</div>
+    <h2 class="section-title">Los maestros detrás del plan</h2>
+    <div class="advisors-grid" id="advisorsGrid">
+        <!-- Se carga desde JSON -->
+    </div>
+</section>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="inp-desc">Descripción *</label>
-                <input type="text" id="inp-desc" placeholder="Ej: Mercado semanal" maxlength="60" />
-            </div>
-            <div class="form-group">
-                <label for="inp-monto">Monto *</label>
-                <div class="input-prefix">
-                    <span>$</span>
-                    <input type="number" id="inp-monto" placeholder="0" min="1" />
+<!-- ===== PLANIFICADOR ===== -->
+<section id="planificador">
+    <div class="section-label">Tu camino al éxito</div>
+    <h2 class="section-title">Planificador Financiero</h2>
+
+    <!-- Barra de progreso -->
+    <div class="progress-wrapper">
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <div class="progress-steps" id="progressSteps"></div>
+    </div>
+
+    <!-- Contenedor de pasos -->
+    <div class="planner-card" id="plannerCard">
+
+        <!-- PASO 0: Datos personales -->
+        <div class="step" id="step-0" data-step="0">
+            <div class="step-icon">👤</div>
+            <h3>¡Bienvenido! Cuéntanos sobre ti</h3>
+            <p class="step-desc">Necesitamos algunos datos básicos para personalizar tu plan.</p>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Tu nombre</label>
+                    <input type="text" id="inp-nombre" placeholder="¿Cómo te llamas?" />
+                </div>
+                <div class="form-group">
+                    <label>Tu edad</label>
+                    <input type="number" id="inp-edad" placeholder="Ej: 28" min="16" max="90" />
+                </div>
+                <div class="form-group full">
+                    <label>Ingreso mensual neto (después de impuestos)</label>
+                    <div class="input-currency">
+                        <span>$</span>
+                        <input type="number" id="inp-ingreso" placeholder="Ej: 3500000" min="0" />
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="inp-categoria">Categoría *</label>
-                <select id="inp-categoria">
-                    <option value="">-- Selecciona --</option>
-                    <option value="Alimentación">🍔 Alimentación</option>
-                    <option value="Arriendo">🏠 Arriendo / Vivienda</option>
-                    <option value="Servicios">💡 Servicios públicos</option>
-                    <option value="Transporte">🚗 Transporte</option>
-                    <option value="Salud">💊 Salud</option>
-                    <option value="Educación">📚 Educación</option>
-                    <option value="Diversión">🎉 Diversión / Ocio</option>
-                    <option value="Ropa">👕 Ropa</option>
-                    <option value="Tecnología">📱 Tecnología</option>
-                    <option value="Otros">📦 Otros</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="inp-fecha">Fecha *</label>
-                <input type="date" id="inp-fecha" />
+            <div class="step-nav">
+                <button class="btn-next" onclick="siguientePaso(0)">Continuar →</button>
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="inp-nota">Nota (opcional)</label>
-            <input type="text" id="inp-nota" placeholder="Detalle adicional..." maxlength="100" />
+        <!-- PASO 1: ¿Tienes deudas? -->
+        <div class="step" id="step-1" data-step="1" style="display:none;">
+            <div class="step-icon">🤔</div>
+            <h3>La pregunta clave</h3>
+            <p class="step-desc">Sé honesto/a. Sin importar la respuesta, tenemos un plan para ti.</p>
+            <div class="big-choice">
+                <button class="choice-card" id="choiceNoDeuda" onclick="elegirDeuda(false)">
+                    <span class="choice-emoji">✅</span>
+                    <strong>No tengo deudas</strong>
+                    <small>Estoy libre de deudas y listo para crecer</small>
+                </button>
+                <button class="choice-card" id="choiceDeuda" onclick="elegirDeuda(true)">
+                    <span class="choice-emoji">⚠️</span>
+                    <strong>Sí tengo deudas</strong>
+                    <small>Tengo créditos, tarjetas u otras obligaciones</small>
+                </button>
+            </div>
         </div>
 
-        <div class="form-actions">
-            <button type="submit" class="btn-gold">➕ Agregar gasto</button>
-            <button type="button" class="btn-ghost" id="btnLimpiarForm">Limpiar</button>
+        <!-- PASO 2A: Deudas (solo si tiene) -->
+        <div class="step" id="step-2a" data-step="2" style="display:none;">
+            <div class="step-icon">💳</div>
+            <h3>Registra tus deudas</h3>
+            <p class="step-desc">Según Dave Ramsey: "Para salir de deudas, primero debes conocerlas todas."</p>
+            <div id="deudasContainer">
+                <div class="deuda-row" data-index="0">
+                    <input type="text"   class="d-nombre"  placeholder="Nombre de la deuda (ej: Tarjeta Visa)" />
+                    <input type="number" class="d-total"   placeholder="Saldo total $" min="0" />
+                    <input type="number" class="d-cuota"   placeholder="Cuota mensual $" min="0" />
+                    <input type="number" class="d-interes" placeholder="Tasa interés % anual" min="0" max="200" step="0.1"/>
+                    <button class="btn-remove-deuda" onclick="eliminarDeuda(this)">✕</button>
+                </div>
+            </div>
+            <button class="btn-add" onclick="agregarDeuda()">+ Agregar otra deuda</button>
+            <div id="resumenDeudas" class="resumen-box" style="display:none;"></div>
+            <div class="step-nav">
+                <button class="btn-prev" onclick="anteriorPaso(2)">← Atrás</button>
+                <button class="btn-next" onclick="siguientePaso(2)">Continuar →</button>
+            </div>
         </div>
-    </form>
+
+        <!-- PASO 2B: Gastos mensuales -->
+        <div class="step" id="step-2b" data-step="3" style="display:none;">
+            <div class="step-icon">📋</div>
+            <h3>Tus gastos mensuales</h3>
+            <p class="step-desc">Warren Buffett: "No ahorres lo que queda después de gastar; gasta lo que queda después de ahorrar."</p>
+            <div class="gastos-grid">
+                <div class="gasto-item">
+                    <label>🍔 Alimentación</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-alimentacion" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>🏠 Arriendo / Hipoteca</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-arriendo" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>💡 Servicios públicos</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-servicios" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>🚗 Transporte</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-transporte" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>📱 Telefonía / Internet</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-telefono" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>🎉 Diversión / Ocio</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-diversion" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>👕 Ropa / Calzado</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-ropa" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>💊 Salud / Medicamentos</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-salud" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>📚 Educación</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-educacion" placeholder="0" min="0" /></div>
+                </div>
+                <div class="gasto-item">
+                    <label>🐾 Otros gastos</label>
+                    <div class="input-currency"><span>$</span><input type="number" id="g-otros" placeholder="0" min="0" /></div>
+                </div>
+            </div>
+            <div id="resumenGastos" class="resumen-box"></div>
+            <div class="step-nav">
+                <button class="btn-prev" id="btnPrevGastos" onclick="anteriorDesdeGastos()">← Atrás</button>
+                <button class="btn-next" onclick="siguientePaso(3)">Continuar →</button>
+            </div>
+        </div>
+
+        <!-- PASO 3: Metas financieras -->
+        <div class="step" id="step-3" data-step="4" style="display:none;">
+            <div class="step-icon">🎯</div>
+            <h3>¿Cuáles son tus metas?</h3>
+            <p class="step-desc">Robert Kiyosaki: "El dinero trabaja para los que tienen un plan. Sin metas, el dinero desaparece."</p>
+            <div class="metas-checks" id="metasContainer">
+                <!-- Se generan desde JSON -->
+            </div>
+            <div class="form-group" style="margin-top:1.5rem;">
+                <label>¿Cuánto tiempo tienes para lograr tus metas principales? (años)</label>
+                <input type="number" id="inp-horizonte" placeholder="Ej: 5" min="1" max="40" />
+            </div>
+            <div class="step-nav">
+                <button class="btn-prev" onclick="anteriorPaso(4)">← Atrás</button>
+                <button class="btn-next" onclick="siguientePaso(4)">Generar mi plan →</button>
+            </div>
+        </div>
+
+        <!-- PASO 4: RESULTADO DEL PLAN -->
+        <div class="step" id="step-4" data-step="5" style="display:none;">
+            <div id="planResultado">
+                <!-- Se genera dinámicamente -->
+            </div>
+        </div>
+
+    </div><!-- /planner-card -->
 </section>
 
 <!-- ===== HISTORIAL ===== -->
-<section id="historial">
-    <div class="section-title-row">
-        <h2>Historial de gastos</h2>
-        <div class="historial-actions">
-            <select id="filtroCategoria" class="filtro-select">
-                <option value="todas">Todas las categorías</option>
-                <option value="Alimentación">🍔 Alimentación</option>
-                <option value="Arriendo">🏠 Arriendo</option>
-                <option value="Servicios">💡 Servicios</option>
-                <option value="Transporte">🚗 Transporte</option>
-                <option value="Salud">💊 Salud</option>
-                <option value="Educación">📚 Educación</option>
-                <option value="Diversión">🎉 Diversión</option>
-                <option value="Ropa">👕 Ropa</option>
-                <option value="Tecnología">📱 Tecnología</option>
-                <option value="Otros">📦 Otros</option>
-            </select>
-            <button id="btnExportar" class="btn-ghost-sm">📋 Copiar resumen</button>
-            <button id="btnEliminarTodo" class="btn-danger-sm">🗑️ Vaciar</button>
-        </div>
-    </div>
-
-    <div id="listaGastos" class="lista-transacciones">
-        <p class="empty-msg">No hay gastos registrados aún.</p>
-    </div>
-
-    <p id="totalFiltrado" class="total-filtrado" style="display:none;"></p>
+<section id="historial" style="display:none;">
+    <div class="section-label">Tus planes guardados</div>
+    <h2 class="section-title">Historial de Planes</h2>
+    <div id="historialLista"></div>
+    <button class="btn-outline" id="btnLimpiarHistorial">🗑️ Limpiar historial</button>
 </section>
 
-<!-- ===== MODAL PRESUPUESTO ===== -->
-<div id="modalPresupuesto" class="modal" style="display:none;">
-    <div class="modal-overlay"></div>
-    <div class="modal-box">
-        <button class="modal-close">✕</button>
-        <h3>⚙️ Configurar presupuesto</h3>
-        <p class="modal-desc">Define cuánto dinero tienes disponible este mes. Recibirás alertas cuando te acerques al límite.</p>
-
-        <div class="form-group">
-            <label>Ingreso / Presupuesto mensual</label>
-            <div class="input-prefix">
-                <span>$</span>
-                <input type="number" id="inp-presupuesto" placeholder="Ej: 3000000" min="1" />
-            </div>
-        </div>
-
-        <div class="form-group" style="margin-top:1rem;">
-            <label>Alerta cuando llegue al <span id="pctLabel">80</span>% del presupuesto</label>
-            <input type="range" id="inp-umbral" min="50" max="95" value="80" step="5"
-                   oninput="document.getElementById('pctLabel').textContent=this.value" />
-        </div>
-
-        <div class="modal-footer">
-            <button class="btn-gold" id="btnGuardarPresupuesto">Guardar</button>
-            <button class="btn-ghost modal-close-btn">Cancelar</button>
-        </div>
+<!-- ===== FOOTER ===== -->
+<footer>
+    <div class="footer-inner">
+        <div class="logo">💰 FinanzasMaestro</div>
+        <p>Inspirado en Dave Ramsey · Warren Buffett · Robert Kiyosaki</p>
+        <p class="footer-disc">⚠️ Este es un planificador educativo. Consulta a un asesor financiero certificado para decisiones importantes.</p>
+        <p class="footer-copy">© <span id="fyear"></span> FinanzasMaestro. Proyecto educativo.</p>
     </div>
-</div>
+    <button id="scrollTop" style="display:none;">↑</button>
+</footer>
 
 <!-- TOAST -->
 <div id="toast" class="toast" style="display:none;"></div>
 
-<!-- SCROLL TOP -->
-<button id="scrollTop" style="display:none;">↑</button>
+<!-- MODAL -->
+<div id="modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-box">
+        <button class="modal-close">✕</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
 
-<footer>
-    <p>MisGastos · Control financiero personal · JF.dev <span id="fyear"></span></p>
-</footer>
-
-<script src="gastos_script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
