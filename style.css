@@ -96,6 +96,21 @@ nav { display:flex; align-items:center; gap:0.2rem; }
 }
 #mobileMenu a:last-child { border-bottom:none; }
 
+#mobileMenu button {
+    background: var(--gold);
+    color: var(--blanco);
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 7px;
+    font-family: var(--ff-body);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 0.3rem;
+    width: 100%;
+    text-align: left;
+}
+
 /* ===== ALERTA BANNER ===== */
 .alerta-banner {
     display:flex; align-items:center; justify-content:space-between;
