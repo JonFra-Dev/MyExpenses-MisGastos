@@ -1,808 +1,490 @@
-// ============================================================
-// 1. VARIABLES GLOBALES Y OBJETOS
-// ============================================================
+/* ============================================
+   MISGASTOS — style.css
+   Tema: Blanco limpio con acentos dorados
+   ============================================ */
 
-// Objeto de estado general de la app
-const APP = {
-    gastos:      [],     // arreglo de transacciones
-    config:      {       // objeto de configuración
-        presupuesto: 0,
-        umbral:      80
-    },
-    categorias:  [],     // arreglo cargado desde JSON (Fetch)
-    filtro:      "todas" // filtro activo del historial
-};
-
-// Matriz de emojis por categoría (arreglo de arreglos)
-const EMOJIS_CAT = [
-    ["Alimentación", "🍔"],
-    ["Arriendo",     "🏠"],
-    ["Servicios",    "💡"],
-    ["Transporte",   "🚗"],
-    ["Salud",        "💊"],
-    ["Educación",    "📚"],
-    ["Diversión",    "🎉"],
-    ["Ropa",         "👕"],
-    ["Tecnología",   "📱"],
-    ["Otros",        "📦"]
-];
-
-// ============================================================
-// 2. DOCUMENT READY — jQuery
-// ============================================================
-$(document).ready(function () {
-
-    // 1. Cargar datos del JSON via Fetch
-    cargarDatosJSON();
-
-    // 2. Cargar configuración y gastos desde LocalStorage
-    cargarConfigLS();
-    cargarGastosLS();
-
-    // 3. Poner fecha de hoy por defecto en formulario
-    $("#inp-fecha").val(getFechaHoy());
-
-    // 4. Mostrar mes actual
-    $("#mesActual").text(getMesActual());
-    $("#fyear").text(new Date().getFullYear());
-
-    // 5. Iniciar eventos y componentes
-    configurarEventos();
-    iniciarScrollTop();
-    renderizarTodo();
-
-    // 6. BOM: info del navegador
-    registrarInfoNavegador();
-
-    console.log("✅ MisGastos iniciado | Navegador:", navigator.userAgent.split(")")[0].split("(")[1]);
-});
-
-// ============================================================
-// 3. FETCH — Cargar datos externos desde archivo.json
-// ============================================================
-function cargarDatosJSON() {
-    fetch("gastos_archivo.json")
-        .then(function (res) {
-            if (!res.ok) throw new Error("Error " + res.status);
-            return res.json();
-        })
-        .then(function (data) {
-            // Guardar arreglo de categorías en estado
-            APP.categorias = data.categorias;
-
-            // Leer config por defecto del JSON (solo si no hay guardada en LS)
-            const configGuardada = localStorage.getItem("mg_config");
-            if (!configGuardada && data.config_default) {
-                APP.config.presupuesto = data.config_default.presupuesto;
-                APP.config.umbral      = data.config_default.umbral_alerta;
-            }
-
-            // Mostrar frase aleatoria del JSON en consola (arreglo)
-            const frases = data.frases;
-            const frase  = frases[Math.floor(Math.random() * frases.length)];
-            console.log("💡 Consejo del día:", frase);
-
-            renderizarTodo();
-        })
-        .catch(function (err) {
-            console.warn("⚠️ Fetch falló, usando datos locales:", err.message);
-            // Cargar categorías de respaldo (arreglo de objetos)
-            APP.categorias = EMOJIS_CAT.map(function (par) {
-                return { nombre: par[0], emoji: par[1] };
-            });
-        });
+:root {
+    --blanco:     #FFFFFF;
+    --fondo:      #F9F7F2;
+    --fondo2:     #F2EEE4;
+    --gold:       #C9A84C;
+    --gold2:      #E8C96A;
+    --gold-light: rgba(201,168,76,0.12);
+    --gold-mid:   rgba(201,168,76,0.28);
+    --texto:      #1C1A14;
+    --muted:      #7A7464;
+    --dim:        #B8B2A4;
+    --borde:      #E6E0D0;
+    --verde:      #2A7A4E;
+    --rojo:       #B83232;
+    --rojo-light: rgba(184,50,50,0.08);
+    --amarillo:   #B87A00;
+    --shadow-sm:  0 2px 12px rgba(0,0,0,0.06);
+    --shadow:     0 8px 32px rgba(0,0,0,0.1);
+    --radius:     14px;
+    --radius-sm:  9px;
+    --ff-head:    'Cormorant Garamond', serif;
+    --ff-body:    'Nunito', sans-serif;
+    --tr:         0.25s ease;
 }
 
-// ============================================================
-// 4. LOCAL STORAGE — guardar / recuperar / eliminar
-// ============================================================
-function guardarGastosLS() {
-    // JSON.stringify para convertir arreglo a string
-    localStorage.setItem("mg_gastos", JSON.stringify(APP.gastos));
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+    background:var(--fondo);
+    color:var(--texto);
+    font-family:var(--ff-body);
+    font-size:15px;
+    line-height:1.65;
 }
 
-function cargarGastosLS() {
-    const stored = localStorage.getItem("mg_gastos");
-    if (stored) {
-        // JSON.parse para convertir string a arreglo
-        APP.gastos = JSON.parse(stored);
-    }
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--fondo); }
+::-webkit-scrollbar-thumb { background:var(--gold); border-radius:3px; }
+
+/* ===== NAVBAR ===== */
+#navbar {
+    position:sticky; top:0; z-index:200;
+    background:var(--blanco);
+    border-bottom:1px solid var(--borde);
+    box-shadow:var(--shadow-sm);
 }
 
-function guardarConfigLS() {
-    localStorage.setItem("mg_config", JSON.stringify(APP.config));
+.nav-inner {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.9rem 6%; max-width:1100px; margin:0 auto;
 }
 
-function cargarConfigLS() {
-    const stored = localStorage.getItem("mg_config");
-    if (stored) {
-        APP.config = JSON.parse(stored);
-    }
+.logo {
+    font-family:var(--ff-head); font-size:1.5rem; font-weight:700;
+    color:var(--gold); letter-spacing:-0.3px;
 }
 
-function eliminarTodosLS() {
-    // BOM: confirm antes de eliminar
-    const ok = confirm("¿Estás seguro de que quieres eliminar TODOS los gastos?\nEsta acción no se puede deshacer.");
-    if (!ok) return;
+nav { display:flex; align-items:center; gap:0.2rem; }
 
-    // Eliminar clave específica del LocalStorage
-    localStorage.removeItem("mg_gastos");
-    APP.gastos = [];
-    renderizarTodo();
-    mostrarToast("🗑️ Todos los gastos han sido eliminados.");
+.nav-link {
+    text-decoration:none; color:var(--muted); font-size:0.88rem;
+    font-weight:600; padding:0.45rem 0.9rem; border-radius:7px;
+    transition:var(--tr);
+}
+.nav-link:hover { color:var(--gold); background:var(--gold-light); }
+
+.btn-gold-sm {
+    background:var(--gold); color:var(--blanco);
+    border:none; padding:0.45rem 1rem; border-radius:7px;
+    font-family:var(--ff-body); font-size:0.85rem; font-weight:700;
+    cursor:pointer; transition:var(--tr); margin-left:0.5rem;
+}
+.btn-gold-sm:hover { background:var(--gold2); transform:translateY(-1px); }
+
+.menu-btn {
+    display:none; background:none; border:none;
+    font-size:1.3rem; color:var(--texto); cursor:pointer;
 }
 
-function eliminarGasto(id) {
-    // Filtrar arreglo para remover el gasto por id
-    const antes = APP.gastos.length;
-    APP.gastos = APP.gastos.filter(function (g) { return g.id !== id; });
+#mobileMenu {
+    display:flex; flex-direction:column;
+    border-top:1px solid var(--borde);
+    padding:0.8rem 6%;
+    background:var(--blanco);
+}
+#mobileMenu a {
+    text-decoration:none; color:var(--muted); font-weight:600;
+    padding:0.6rem 0; font-size:0.9rem;
+    border-bottom:1px solid var(--borde);
+}
+#mobileMenu a:last-child { border-bottom:none; }
 
-    if (APP.gastos.length < antes) {
-        guardarGastosLS();
-        renderizarTodo();
-        mostrarToast("✅ Gasto eliminado.");
-    }
+/* ===== ALERTA BANNER ===== */
+.alerta-banner {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.7rem 6%; max-width:100%;
+    font-size:0.88rem; font-weight:700;
+    border-bottom:1px solid transparent;
+}
+.alerta-banner.warn {
+    background:#FFF8E1; color:var(--amarillo);
+    border-color:#FFE082;
+}
+.alerta-banner.danger {
+    background:#FFEBEE; color:var(--rojo);
+    border-color:#FFCDD2;
+}
+.alerta-banner button {
+    background:none; border:none; cursor:pointer;
+    font-size:1rem; color:inherit; opacity:0.6; transition:var(--tr);
+}
+.alerta-banner button:hover { opacity:1; }
+
+/* ===== SECCIONES ===== */
+section {
+    max-width:1100px; margin:0 auto;
+    padding:2.5rem 6%;
 }
 
-// ============================================================
-// 5. CONFIGURAR EVENTOS — jQuery + DOM
-// ============================================================
-function configurarEventos() {
-
-    // ----- Formulario: submit -----
-    $("#formGasto").on("submit", function (e) {
-        e.preventDefault();
-        agregarGasto();
-    });
-
-    // ----- Limpiar formulario -----
-    $("#btnLimpiarForm").on("click", function () {
-        limpiarFormulario();
-        mostrarToast("🧹 Formulario limpiado.");
-    });
-
-    // ----- Abrir modal de presupuesto -----
-    $("#btnPresupuesto").on("click", function () {
-        // Precargar valores actuales en el modal
-        $("#inp-presupuesto").val(APP.config.presupuesto || "");
-        $("#inp-umbral").val(APP.config.umbral);
-        $("#pctLabel").text(APP.config.umbral);
-
-        // jQuery: fadeIn modal
-        $("#modalPresupuesto").fadeIn(280);
-        $("body").css("overflow", "hidden");
-    });
-
-    // ----- Guardar presupuesto -----
-    $("#btnGuardarPresupuesto").on("click", function () {
-        const pres  = parseFloat($("#inp-presupuesto").val());
-        const umbral = parseInt($("#inp-umbral").val());
-
-        // Validación con condicional
-        if (!pres || pres <= 0) {
-            mostrarToast("⚠️ Ingresa un presupuesto válido.");
-            return;
-        }
-
-        // Actualizar objeto de configuración
-        APP.config.presupuesto = pres;
-        APP.config.umbral      = umbral;
-        guardarConfigLS();
-
-        cerrarModal();
-        renderizarTodo();
-        mostrarToast("💰 Presupuesto guardado: " + formatPeso(pres));
-    });
-
-    // ----- Cerrar modal -----
-    $(document).on("click", ".modal-close, .modal-close-btn, .modal-overlay", function () {
-        cerrarModal();
-    });
-
-    // ----- Filtro de categorías (evento change) -----
-    $("#filtroCategoria").on("change", function () {
-        APP.filtro = $(this).val();
-        // jQuery: hide/show con animación en la lista
-        renderizarHistorial();
-    });
-
-    // ----- Eliminar todos -----
-    $("#btnEliminarTodo").on("click", eliminarTodosLS);
-
-    // ----- Exportar resumen -----
-    $("#btnExportar").on("click", exportarResumen);
-
-    // ----- Menú móvil: jQuery slideToggle -----
-    $("#menuToggle").on("click", function () {
-        $("#mobileMenu").slideToggle(280);
-    });
-
-    $("#mobileMenu a").on("click", function () {
-        $("#mobileMenu").slideUp(250);
-    });
-
-    // ----- Evento: change en monto/descripción para feedback en tiempo real -----
-    $("#inp-monto").on("input", function () {
-        const val = parseFloat($(this).val());
-        const presupuesto = APP.config.presupuesto;
-        const totalMes    = calcularTotalMes();
-
-        // Condicional: alerta anticipada si el gasto supera lo disponible
-        if (presupuesto > 0 && val > 0 && (totalMes + val) > presupuesto) {
-            $(this).css("border-color", "#B83232");
-        } else {
-            $(this).css("border-color", "");
-        }
-    });
-
-    // ----- Evento mouseover en tarjetas de resumen -----
-    $(document).on("mouseenter", ".card", function () {
-        // jQuery: find dentro de la card, animate en el valor
-        $(this).find(".card-valor").animate({ fontSize: "2rem" }, 180);
-    });
-    $(document).on("mouseleave", ".card", function () {
-        $(this).find(".card-valor").animate({ fontSize: "1.9rem" }, 180);
-    });
-
-    // ----- Tecla ESC para cerrar modal (BOM/DOM keydown) -----
-    $(document).on("keydown", function (e) {
-        if (e.key === "Escape" && $("#modalPresupuesto").is(":visible")) {
-            cerrarModal();
-        }
-    });
-
-    // ----- Scroll top -----
-    $(window).on("scroll", function () {
-        if ($(this).scrollTop() > 300) {
-            $("#scrollTop").fadeIn(250);
-        } else {
-            $("#scrollTop").fadeOut(250);
-        }
-    });
-
-    $("#scrollTop").on("click", function () {
-        $("html, body").animate({ scrollTop: 0 }, 500);
-    });
-
-    // ----- Links de nav: smooth scroll -----
-    $(document).on("click", ".nav-link", function (e) {
-        const href = $(this).attr("href");
-        if (href && href.startsWith("#")) {
-            e.preventDefault();
-            const destino = $(href);
-            if (destino.length) {
-                $("html, body").animate(
-                    { scrollTop: destino.offset().top - 70 },
-                    500
-                );
-            }
-        }
-    });
+section + section {
+    border-top:1px solid var(--borde);
 }
 
-// ============================================================
-// 6. AGREGAR GASTO — Validación + objeto + LocalStorage
-// ============================================================
-function agregarGasto() {
-    // Leer valores del formulario
-    const desc      = $("#inp-desc").val().trim();
-    const monto     = parseFloat($("#inp-monto").val());
-    const categoria = $("#inp-categoria").val();
-    const fecha     = $("#inp-fecha").val();
-    const nota      = $("#inp-nota").val().trim();
-
-    // Validaciones con condicionales
-    if (!desc) {
-        mostrarToast("⚠️ Escribe una descripción.");
-        $("#inp-desc").focus();
-        return;
-    }
-    if (!monto || monto <= 0) {
-        mostrarToast("⚠️ Ingresa un monto válido.");
-        $("#inp-monto").focus();
-        return;
-    }
-    if (!categoria) {
-        mostrarToast("⚠️ Selecciona una categoría.");
-        $("#inp-categoria").focus();
-        return;
-    }
-    if (!fecha) {
-        mostrarToast("⚠️ Selecciona una fecha.");
-        return;
-    }
-
-    // Crear objeto gasto (JSON object)
-    const gasto = {
-        id:        Date.now(),           // identificador único
-        desc:      desc,
-        monto:     monto,
-        categoria: categoria,
-        fecha:     fecha,
-        nota:      nota,
-        emoji:     obtenerEmoji(categoria)
-    };
-
-    // Agregar al arreglo
-    APP.gastos.unshift(gasto);   // unshift: inserta al inicio
-
-    // Guardar en LocalStorage (stringify)
-    guardarGastosLS();
-
-    // Verificar alertas de presupuesto
-    verificarAlerta();
-
-    // Actualizar interfaz
-    renderizarTodo();
-    limpiarFormulario();
-
-    mostrarToast("✅ Gasto registrado: " + formatPeso(monto));
-
-    // BOM: alert si se sobrepasa el presupuesto
-    const totalMes = calcularTotalMes();
-    const presupuesto = APP.config.presupuesto;
-    if (presupuesto > 0 && totalMes > presupuesto) {
-        alert("⚠️ ¡Atención!\n\nHas superado tu presupuesto mensual.\n" +
-              "Gastado: " + formatPeso(totalMes) + "\n" +
-              "Presupuesto: " + formatPeso(presupuesto));
-    }
+.section-title-row {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:0.8rem; margin-bottom:1.8rem;
 }
 
-// ============================================================
-// 7. RENDERIZAR TODO — Actualiza toda la UI
-// ============================================================
-function renderizarTodo() {
-    renderizarResumen();
-    renderizarCategorias();
-    renderizarHistorial();
-    verificarAlerta();
+section h2 {
+    font-family:var(--ff-head); font-size:1.9rem; font-weight:700;
+    letter-spacing:-0.5px; color:var(--texto);
 }
 
-// ============================================================
-// 8. RENDERIZAR RESUMEN — DOM + jQuery animate
-// ============================================================
-function renderizarResumen() {
-    const presupuesto = APP.config.presupuesto;
-    const totalMes    = calcularTotalMes();
-    const disponible  = presupuesto - totalMes;
-    const pct         = presupuesto > 0 ? Math.min(Math.round((totalMes / presupuesto) * 100), 100) : 0;
-
-    // Actualizar tarjetas — manipulación del DOM con jQuery
-    $("#cardIngreso").text(presupuesto > 0 ? formatPeso(presupuesto) : "Sin configurar");
-    $("#cardGasto").text(formatPeso(totalMes));
-
-    if (presupuesto > 0) {
-        $("#cardSaldo").text(formatPeso(Math.abs(disponible)));
-
-        if (disponible < 0) {
-            // Excedido
-            $("#cardSaldoBox").addClass("peligro");
-            $("#cardSaldoHint").text("¡Presupuesto superado!");
-        } else if (pct >= APP.config.umbral) {
-            // Cerca del límite
-            $("#cardSaldoBox").removeClass("peligro");
-            $("#cardSaldoHint").text("Cerca del límite");
-        } else {
-            $("#cardSaldoBox").removeClass("peligro");
-            $("#cardSaldoHint").text("Puedes seguir gastando");
-        }
-    } else {
-        $("#cardSaldo").text("—");
-        $("#cardSaldoHint").text("Configura tu presupuesto");
-    }
-
-    // Barra de progreso con jQuery animate
-    let clase = "";
-    if (pct >= 100) clase = "danger";
-    else if (pct >= APP.config.umbral) clase = "warn";
-
-    $("#barFill")
-        .removeClass("warn danger")
-        .addClass(clase)
-        .animate({ width: pct + "%" }, 700);
-
-    // Texto del porcentaje — manipulación DOM
-    $("#barPct").text(presupuesto > 0 ? pct + "%" : "—");
+.mes-badge {
+    background:var(--gold-light); border:1px solid var(--gold-mid);
+    color:var(--gold); padding:0.3rem 0.9rem; border-radius:50px;
+    font-size:0.8rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.5px;
 }
 
-// ============================================================
-// 9. RENDERIZAR CATEGORÍAS — DOM dinámico + ciclos
-// ============================================================
-function renderizarCategorias() {
-    const gastosDelMes = filtrarGastosMesActual();
-    const container    = document.getElementById("resumenCategorias");
-
-    if (gastosDelMes.length === 0) {
-        container.innerHTML = '<p class="empty-msg">Aún no hay gastos registrados este mes.</p>';
-        return;
-    }
-
-    // Calcular totales por categoría usando un objeto (mapa)
-    const totalesCat = {};
-    for (let i = 0; i < gastosDelMes.length; i++) {
-        const g   = gastosDelMes[i];
-        const cat = g.categoria;
-        if (!totalesCat[cat]) {
-            totalesCat[cat] = { total: 0, emoji: g.emoji };
-        }
-        totalesCat[cat].total += g.monto;
-    }
-
-    // Calcular total general del mes
-    const totalMes = calcularTotalMes();
-
-    // Ordenar de mayor a menor (arreglo de pares)
-    const categoriasSorted = Object.keys(totalesCat)
-        .map(function (cat) {
-            return { nombre: cat, total: totalesCat[cat].total, emoji: totalesCat[cat].emoji };
-        })
-        .sort(function (a, b) { return b.total - a.total; });
-
-    // Limpiar y construir DOM
-    container.innerHTML = "";
-
-    // Ciclo for para crear elementos
-    for (let i = 0; i < categoriasSorted.length; i++) {
-        const cat = categoriasSorted[i];
-        const pct = totalMes > 0 ? Math.round((cat.total / totalMes) * 100) : 0;
-
-        // Crear elemento div — DOM dinámico
-        const fila = document.createElement("div");
-        fila.className = "cat-row";
-        fila.innerHTML = `
-            <span class="cat-emoji">${cat.emoji}</span>
-            <span class="cat-nombre">${cat.nombre}</span>
-            <div class="cat-bar-mini">
-                <div class="cat-bar-fill" data-pct="${pct}" style="width:0%"></div>
-            </div>
-            <span class="cat-pct">${pct}%</span>
-            <span class="cat-monto">${formatPeso(cat.total)}</span>
-        `;
-        container.appendChild(fila);
-    }
-
-    // Animar barras mini con jQuery
-    setTimeout(function () {
-        $(".cat-bar-fill").each(function () {
-            const pct = $(this).data("pct");
-            $(this).animate({ width: pct + "%" }, 600);
-        });
-    }, 100);
+.sub-title {
+    font-family:var(--ff-head); font-size:1.3rem; font-weight:600;
+    color:var(--muted); margin:2rem 0 1rem;
 }
 
-// ============================================================
-// 10. RENDERIZAR HISTORIAL — DOM + jQuery hide/show + filtro
-// ============================================================
-function renderizarHistorial() {
-    const lista = document.getElementById("listaGastos");
-
-    // Aplicar filtro de categoría
-    let gastosFiltrados;
-    if (APP.filtro === "todas") {
-        gastosFiltrados = APP.gastos;
-    } else {
-        // Filtrar arreglo con filter()
-        gastosFiltrados = APP.gastos.filter(function (g) {
-            return g.categoria === APP.filtro;
-        });
-    }
-
-    // Estado vacío
-    if (gastosFiltrados.length === 0) {
-        lista.innerHTML = '<p class="empty-msg">No hay gastos' +
-            (APP.filtro !== "todas" ? ' en "' + APP.filtro + '"' : '') +
-            ' registrados.</p>';
-        $("#totalFiltrado").hide();
-        return;
-    }
-
-    lista.innerHTML = "";
-
-    // Ciclo para construir la lista de transacciones
-    gastosFiltrados.forEach(function (gasto) {
-        const item = document.createElement("div");
-        item.className = "tx-item";
-        item.setAttribute("data-id", gasto.id);
-
-        // Formatear fecha
-        const fechaStr = formatFecha(gasto.fecha);
-
-        item.innerHTML = `
-            <span class="tx-emoji">${gasto.emoji}</span>
-            <div class="tx-info">
-                <div class="tx-desc">${gasto.desc}</div>
-                <div class="tx-meta">
-                    <span class="tx-cat">${gasto.categoria}</span>
-                    ${fechaStr}
-                    ${gasto.nota ? ' · <em>' + gasto.nota + '</em>' : ''}
-                </div>
-            </div>
-            <span class="tx-monto">${formatPeso(gasto.monto)}</span>
-            <button class="tx-del" title="Eliminar gasto" onclick="confirmarEliminar(${gasto.id})">✕</button>
-        `;
-
-        // jQuery: fadeIn al insertar el elemento
-        $(item).hide();
-        lista.appendChild(item);
-        $(item).fadeIn(250);
-    });
-
-    // Total filtrado
-    const totalFiltrado = gastosFiltrados.reduce(function (acc, g) { return acc + g.monto; }, 0);
-    const textoTotal    = APP.filtro !== "todas"
-        ? `Total en "${APP.filtro}": ${formatPeso(totalFiltrado)} (${gastosFiltrados.length} gastos)`
-        : `Total: ${formatPeso(totalFiltrado)} (${gastosFiltrados.length} gastos)`;
-
-    // jQuery: slideDown para mostrar total
-    $("#totalFiltrado").text(textoTotal).slideDown(300);
+/* ===== TARJETAS RESUMEN ===== */
+.cards-top {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:1.2rem; margin-bottom:2rem;
 }
 
-// ============================================================
-// 11. VERIFICAR ALERTA DE PRESUPUESTO — Condicionales + DOM
-// ============================================================
-function verificarAlerta() {
-    const presupuesto = APP.config.presupuesto;
-    if (presupuesto <= 0) {
-        $("#alertaBanner").slideUp(300);
-        return;
-    }
+.card {
+    background:var(--blanco); border:1px solid var(--borde);
+    border-radius:var(--radius); padding:1.4rem 1.6rem;
+    box-shadow:var(--shadow-sm); transition:var(--tr);
+    border-top:3px solid transparent;
+}
+.card:hover { box-shadow:var(--shadow); transform:translateY(-2px); }
 
-    const totalMes = calcularTotalMes();
-    const pct      = (totalMes / presupuesto) * 100;
-    const banner   = $("#alertaBanner");
+.card-ingreso { border-top-color:var(--gold); }
+.card-gasto   { border-top-color:#E08030; }
+.card-saldo   { border-top-color:var(--verde); }
+.card-saldo.peligro { border-top-color:var(--rojo); }
 
-    // Condicional para tipo de alerta
-    if (pct >= 100) {
-        // Superado
-        $("#alertaTexto").text(
-            "🚨 ¡Presupuesto superado! Gastaste " + formatPeso(totalMes) +
-            " de " + formatPeso(presupuesto) + " (" + Math.round(pct) + "%)."
-        );
-        banner.removeClass("warn").addClass("danger");
-        banner.slideDown(350);
-    } else if (pct >= APP.config.umbral) {
-        // Cerca del límite
-        const restante = presupuesto - totalMes;
-        $("#alertaTexto").text(
-            "⚠️ Llevas el " + Math.round(pct) + "% de tu presupuesto. " +
-            "Te quedan " + formatPeso(restante) + "."
-        );
-        banner.removeClass("danger").addClass("warn");
-        banner.slideDown(350);
-    } else {
-        // Todo bien
-        banner.slideUp(300);
-    }
+.card-label {
+    font-size:0.75rem; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.8px; margin-bottom:0.4rem;
+}
+.card-valor {
+    font-family:var(--ff-head); font-size:1.9rem; font-weight:700;
+    line-height:1.1; margin-bottom:0.3rem;
+}
+.card-ingreso .card-valor { color:var(--gold); }
+.card-gasto   .card-valor { color:#E08030; }
+.card-saldo   .card-valor { color:var(--verde); }
+.card-saldo.peligro .card-valor { color:var(--rojo); }
+
+.card-hint { font-size:0.75rem; color:var(--dim); }
+
+/* ===== BARRA DE PRESUPUESTO ===== */
+.presupuesto-bar-wrap {
+    background:var(--blanco); border:1px solid var(--borde);
+    border-radius:var(--radius); padding:1.2rem 1.5rem;
+    box-shadow:var(--shadow-sm); margin-bottom:0.5rem;
+}
+.bar-labels {
+    display:flex; justify-content:space-between;
+    font-size:0.82rem; font-weight:700; color:var(--muted);
+    margin-bottom:0.6rem;
+}
+.bar-track {
+    height:10px; background:var(--fondo2);
+    border-radius:5px; overflow:hidden;
+}
+.bar-fill {
+    height:100%; border-radius:5px;
+    background:linear-gradient(90deg, var(--gold), var(--gold2));
+    transition:width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.bar-fill.warn   { background:linear-gradient(90deg, #E08030, #F0A040); }
+.bar-fill.danger { background:linear-gradient(90deg, var(--rojo), #E05050); }
+
+/* ===== CATEGORÍAS RESUMEN ===== */
+.categorias-lista {
+    display:flex; flex-direction:column; gap:0.6rem;
 }
 
-// ============================================================
-// 12. CONFIRMAR ELIMINAR — BOM confirm
-// ============================================================
-function confirmarEliminar(id) {
-    // Buscar el gasto en el arreglo
-    const gasto = APP.gastos.find(function (g) { return g.id === id; });
-    if (!gasto) return;
+.cat-row {
+    display:grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items:center; gap:0.8rem;
+    background:var(--blanco); border:1px solid var(--borde);
+    border-radius:var(--radius-sm); padding:0.7rem 1rem;
+    transition:var(--tr);
+}
+.cat-row:hover { border-color:var(--gold-mid); }
 
-    // BOM: confirm con detalle del gasto
-    const ok = confirm(
-        "¿Eliminar este gasto?\n\n" +
-        "📌 " + gasto.desc + "\n" +
-        "💰 " + formatPeso(gasto.monto) + " — " + gasto.categoria
-    );
+.cat-emoji { font-size:1.2rem; }
+.cat-nombre { font-weight:600; font-size:0.9rem; }
 
-    if (ok) eliminarGasto(id);
+.cat-bar-mini {
+    height:5px; border-radius:3px;
+    background:var(--gold-light); overflow:hidden;
+    min-width:60px;
+}
+.cat-bar-fill {
+    height:100%; border-radius:3px;
+    background:var(--gold);
+    transition:width 0.7s ease;
+}
+.cat-pct  { font-size:0.75rem; color:var(--muted); font-weight:700; min-width:36px; text-align:right; }
+.cat-monto { font-family:var(--ff-head); font-size:1rem; font-weight:700; color:var(--texto); min-width:90px; text-align:right; }
+
+/* ===== FORMULARIO ===== */
+.form-card {
+    background:var(--blanco); border:1px solid var(--borde);
+    border-radius:var(--radius); padding:2rem;
+    box-shadow:var(--shadow-sm);
 }
 
-// ============================================================
-// 13. EXPORTAR RESUMEN — Clipboard API + BOM
-// ============================================================
-function exportarResumen() {
-    const totalMes    = calcularTotalMes();
-    const presupuesto = APP.config.presupuesto;
-    const mes         = getMesActual();
-    const gastosDelMes = filtrarGastosMesActual();
-
-    // Calcular por categoría
-    const totalesCat = {};
-    gastosDelMes.forEach(function (g) {
-        if (!totalesCat[g.categoria]) totalesCat[g.categoria] = 0;
-        totalesCat[g.categoria] += g.monto;
-    });
-
-    // Construir texto de resumen
-    let texto = "📊 RESUMEN DE GASTOS — " + mes.toUpperCase() + "\n";
-    texto += "═══════════════════════════\n";
-    if (presupuesto > 0) {
-        texto += "Presupuesto: " + formatPeso(presupuesto) + "\n";
-    }
-    texto += "Total gastado: " + formatPeso(totalMes) + "\n";
-    if (presupuesto > 0) {
-        const disponible = presupuesto - totalMes;
-        texto += "Disponible: " + formatPeso(disponible) + "\n";
-    }
-    texto += "───────────────────────────\n";
-    texto += "POR CATEGORÍA:\n";
-
-    // Ciclo para listar categorías en el texto
-    for (const cat in totalesCat) {
-        if (totalesCat.hasOwnProperty(cat)) {
-            texto += "  " + obtenerEmoji(cat) + " " + cat + ": " + formatPeso(totalesCat[cat]) + "\n";
-        }
-    }
-
-    texto += "═══════════════════════════\n";
-    texto += "Generado con MisGastos · " + new Date().toLocaleDateString("es-CO");
-
-    // BOM: clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(texto).then(function () {
-            mostrarToast("📋 Resumen copiado al portapapeles.");
-        }).catch(function () {
-            // Fallback: prompt con el texto
-            prompt("Copia este resumen:", texto);
-        });
-    } else {
-        // Fallback si clipboard no disponible (BOM: prompt)
-        prompt("Copia este resumen:", texto);
-    }
+.form-row {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:1.2rem; margin-bottom:1.2rem;
 }
 
-// ============================================================
-// 14. FUNCIONES DE CÁLCULO (Matemáticas)
-// ============================================================
-
-// Total gastado en el mes actual
-function calcularTotalMes() {
-    const mesActual = getFechaHoy().substring(0, 7); // "YYYY-MM"
-    let total = 0;
-
-    // Ciclo for para sumar gastos del mes
-    for (let i = 0; i < APP.gastos.length; i++) {
-        const g = APP.gastos[i];
-        if (g.fecha && g.fecha.startsWith(mesActual)) {
-            total += g.monto;
-        }
-    }
-    return total;
+.form-group {
+    display:flex; flex-direction:column; gap:0.4rem;
 }
 
-// Filtrar gastos del mes actual
-function filtrarGastosMesActual() {
-    const mesActual = getFechaHoy().substring(0, 7);
-    return APP.gastos.filter(function (g) {
-        return g.fecha && g.fecha.startsWith(mesActual);
-    });
+.form-group label {
+    font-size:0.8rem; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.5px;
 }
 
-// ============================================================
-// 15. UTILIDADES
-// ============================================================
-
-function obtenerEmoji(categoria) {
-    // Buscar en la matriz de emojis (ciclo)
-    for (let i = 0; i < EMOJIS_CAT.length; i++) {
-        if (EMOJIS_CAT[i][0] === categoria) return EMOJIS_CAT[i][1];
-    }
-    // Si hay categorías del JSON, buscar ahí también
-    if (APP.categorias) {
-        const encontrada = APP.categorias.find(function (c) { return c.nombre === categoria; });
-        if (encontrada) return encontrada.emoji;
-    }
-    return "📦";
+.form-group input,
+.form-group select {
+    background:var(--fondo); border:1.5px solid var(--borde);
+    color:var(--texto); padding:0.7rem 0.9rem;
+    border-radius:var(--radius-sm); font-family:var(--ff-body);
+    font-size:0.92rem; transition:var(--tr);
 }
 
-function formatPeso(valor) {
-    if (isNaN(valor) || valor === null || valor === undefined) return "$0";
-    return "$" + Math.round(valor).toLocaleString("es-CO");
+.form-group input:focus,
+.form-group select:focus {
+    outline:none; border-color:var(--gold);
+    background:var(--blanco);
+    box-shadow:0 0 0 3px var(--gold-light);
 }
 
-function getFechaHoy() {
-    // BOM: Date object
-    const hoy = new Date();
-    const anio = hoy.getFullYear();
-    const mes  = String(hoy.getMonth() + 1).padStart(2, "0");
-    const dia  = String(hoy.getDate()).padStart(2, "0");
-    return `${anio}-${mes}-${dia}`;
+.input-prefix {
+    display:flex; align-items:center;
+    background:var(--fondo); border:1.5px solid var(--borde);
+    border-radius:var(--radius-sm); overflow:hidden; transition:var(--tr);
+}
+.input-prefix:focus-within {
+    border-color:var(--gold); background:var(--blanco);
+    box-shadow:0 0 0 3px var(--gold-light);
+}
+.input-prefix span {
+    padding:0 0.8rem; color:var(--gold); font-weight:700;
+    font-size:1rem; border-right:1.5px solid var(--borde);
+    background:var(--gold-light); align-self:stretch;
+    display:flex; align-items:center;
+}
+.input-prefix input {
+    background:transparent; border:none; flex:1;
+    padding:0.7rem 0.9rem; color:var(--texto);
+    font-family:var(--ff-body); font-size:0.92rem;
+}
+.input-prefix input:focus { outline:none; box-shadow:none; }
+
+.form-actions {
+    display:flex; gap:1rem; align-items:center; margin-top:1.5rem;
 }
 
-function getMesActual() {
-    const hoy   = new Date();
-    const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                   "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-    return meses[hoy.getMonth()] + " " + hoy.getFullYear();
+/* ===== BOTONES ===== */
+.btn-gold {
+    background:var(--gold); color:var(--blanco); border:none;
+    padding:0.75rem 2rem; border-radius:var(--radius-sm);
+    font-family:var(--ff-body); font-size:0.95rem; font-weight:700;
+    cursor:pointer; transition:var(--tr);
+    box-shadow:0 4px 16px rgba(201,168,76,0.3);
+}
+.btn-gold:hover { background:var(--gold2); transform:translateY(-2px); box-shadow:0 6px 20px rgba(201,168,76,0.4); }
+
+.btn-ghost {
+    background:transparent; color:var(--muted);
+    border:1.5px solid var(--borde); padding:0.75rem 1.4rem;
+    border-radius:var(--radius-sm); font-family:var(--ff-body);
+    font-size:0.92rem; font-weight:600; cursor:pointer; transition:var(--tr);
+}
+.btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
+
+.btn-ghost-sm {
+    background:transparent; color:var(--muted);
+    border:1.5px solid var(--borde); padding:0.4rem 0.9rem;
+    border-radius:7px; font-family:var(--ff-body);
+    font-size:0.8rem; font-weight:600; cursor:pointer; transition:var(--tr);
+}
+.btn-ghost-sm:hover { border-color:var(--gold); color:var(--gold); }
+
+.btn-danger-sm {
+    background:var(--rojo-light); color:var(--rojo);
+    border:1.5px solid rgba(184,50,50,0.2); padding:0.4rem 0.9rem;
+    border-radius:7px; font-family:var(--ff-body);
+    font-size:0.8rem; font-weight:700; cursor:pointer; transition:var(--tr);
+}
+.btn-danger-sm:hover { background:rgba(184,50,50,0.15); }
+
+/* ===== HISTORIAL ===== */
+.historial-actions {
+    display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;
 }
 
-function formatFecha(fechaStr) {
-    if (!fechaStr) return "";
-    const partes = fechaStr.split("-");
-    if (partes.length < 3) return fechaStr;
-    const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-    const mes   = meses[parseInt(partes[1]) - 1] || partes[1];
-    return partes[2] + " " + mes + " " + partes[0];
+.filtro-select {
+    background:var(--blanco); border:1.5px solid var(--borde);
+    color:var(--texto); padding:0.4rem 0.7rem; border-radius:7px;
+    font-family:var(--ff-body); font-size:0.82rem; font-weight:600;
+    cursor:pointer; transition:var(--tr);
+}
+.filtro-select:focus { outline:none; border-color:var(--gold); }
+
+/* Lista de transacciones */
+.lista-transacciones {
+    display:flex; flex-direction:column; gap:0.5rem;
 }
 
-function limpiarFormulario() {
-    // Resetear formulario
-    document.getElementById("formGasto").reset();
-    // Poner fecha de hoy de nuevo
-    $("#inp-fecha").val(getFechaHoy());
-    // Quitar bordes de error
-    $("#inp-monto").css("border-color", "");
+.tx-item {
+    display:grid;
+    grid-template-columns: 2.2rem 1fr auto auto;
+    align-items:center; gap:0.9rem;
+    background:var(--blanco); border:1px solid var(--borde);
+    border-radius:var(--radius-sm); padding:0.85rem 1.1rem;
+    transition:var(--tr); animation:slideIn 0.3s ease;
 }
 
-function cerrarModal() {
-    // jQuery: fadeOut modal
-    $("#modalPresupuesto").fadeOut(250);
-    $("body").css("overflow", "");
+@keyframes slideIn {
+    from { opacity:0; transform:translateY(-8px); }
+    to   { opacity:1; transform:translateY(0); }
 }
 
-function mostrarToast(msg) {
-    // jQuery: fadeIn → delay → fadeOut (animaciones encadenadas)
-    $("#toast").text(msg).stop(true).fadeIn(300).delay(2800).fadeOut(400);
+.tx-item:hover { border-color:var(--gold-mid); box-shadow:var(--shadow-sm); }
+
+.tx-emoji { font-size:1.3rem; text-align:center; }
+
+.tx-info {}
+.tx-desc { font-weight:700; font-size:0.92rem; line-height:1.2; }
+.tx-meta { font-size:0.75rem; color:var(--muted); margin-top:0.1rem; }
+.tx-meta .tx-cat {
+    display:inline-block; background:var(--gold-light);
+    color:var(--gold); padding:0.1rem 0.5rem; border-radius:50px;
+    font-weight:700; font-size:0.7rem; margin-right:0.4rem;
 }
 
-// ============================================================
-// 16. SCROLL TOP
-// ============================================================
-function iniciarScrollTop() {
-    // El evento scroll ya está en configurarEventos()
-    // El botón también
+.tx-monto {
+    font-family:var(--ff-head); font-size:1.1rem; font-weight:700;
+    color:var(--texto); white-space:nowrap;
 }
 
-// ============================================================
-// 17. BOM — Registrar información del navegador
-// ============================================================
-function registrarInfoNavegador() {
-    // Objeto con info del BOM navigator
-    const infoNav = {
-        idioma:     navigator.language,
-        plataforma: navigator.platform,
-        online:     navigator.onLine,
-        cookies:    navigator.cookieEnabled
-    };
+.tx-del {
+    background:none; border:none; color:var(--dim); cursor:pointer;
+    font-size:1rem; transition:var(--tr); padding:0.2rem 0.4rem;
+    border-radius:5px;
+}
+.tx-del:hover { color:var(--rojo); background:var(--rojo-light); }
 
-    // Guardar info como objeto JSON en localStorage
-    localStorage.setItem("mg_nav_info", JSON.stringify(infoNav));
-
-    // Condicional: sin conexión
-    if (!navigator.onLine) {
-        mostrarToast("⚠️ Sin conexión a Internet. Los datos se guardan localmente.");
-    }
-
-    // Verificar si hay datos previos (sesión anterior)
-    const historialPrevio = localStorage.getItem("mg_gastos");
-    if (historialPrevio) {
-        const gastos = JSON.parse(historialPrevio);
-        if (gastos.length > 0) {
-            const ultimo = gastos[0];
-            console.log("📌 Último gasto registrado:", ultimo.desc, "—", formatPeso(ultimo.monto));
-        }
-    }
+.total-filtrado {
+    text-align:right; margin-top:0.8rem;
+    font-size:0.85rem; color:var(--muted); font-weight:700;
 }
 
-// ============================================================
-// 18. PROMPT AL PRIMER USO — BOM
-// ============================================================
-$(window).on("load", function () {
-    // Si no hay presupuesto configurado, BOM: prompt para configurarlo
-    const configGuardada = localStorage.getItem("mg_config");
-    const tienePresupuesto = configGuardada && JSON.parse(configGuardada).presupuesto > 0;
+/* ===== EMPTY ===== */
+.empty-msg {
+    text-align:center; color:var(--dim); font-size:0.9rem;
+    padding:2.5rem 1rem; background:var(--blanco);
+    border:1.5px dashed var(--borde); border-radius:var(--radius);
+}
 
-    if (!tienePresupuesto) {
-        setTimeout(function () {
-            // BOM: prompt
-            const pres = prompt(
-                "👋 ¡Bienvenido a MisGastos!\n\n" +
-                "Para empezar, ¿cuál es tu presupuesto mensual?\n" +
-                "(Escribe solo el número, sin puntos ni comas)"
-            );
+/* ===== MODAL ===== */
+.modal {
+    position:fixed; inset:0; z-index:500;
+    display:flex; align-items:center; justify-content:center; padding:1.5rem;
+}
+.modal-overlay {
+    position:absolute; inset:0;
+    background:rgba(28,26,20,0.5); backdrop-filter:blur(4px);
+}
+.modal-box {
+    background:var(--blanco); border:1px solid var(--borde);
+    border-radius:var(--radius); padding:2rem; max-width:420px; width:100%;
+    position:relative; z-index:1; box-shadow:var(--shadow);
+    animation:fadeUp 0.3s ease;
+}
+.modal-box h3 {
+    font-family:var(--ff-head); font-size:1.5rem; font-weight:700;
+    margin-bottom:0.5rem;
+}
+.modal-desc { font-size:0.85rem; color:var(--muted); margin-bottom:1.5rem; }
+.modal-close {
+    position:absolute; top:1rem; right:1rem;
+    background:none; border:none; color:var(--muted); font-size:1.1rem;
+    cursor:pointer; transition:var(--tr); padding:0.3rem;
+    border-radius:5px;
+}
+.modal-close:hover { color:var(--texto); background:var(--fondo); }
+.modal-footer {
+    display:flex; gap:0.8rem; margin-top:1.5rem;
+}
 
-            if (pres && parseFloat(pres) > 0) {
-                APP.config.presupuesto = parseFloat(pres);
-                guardarConfigLS();
-                renderizarResumen();
-                mostrarToast("💰 Presupuesto configurado: " + formatPeso(APP.config.presupuesto));
-            }
-        }, 800);
-    }
-});
+input[type="range"] {
+    width:100%; accent-color:var(--gold);
+    margin-top:0.3rem;
+}
+
+/* ===== TOAST ===== */
+.toast {
+    position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%);
+    background:var(--texto); color:var(--blanco);
+    padding:0.7rem 1.6rem; border-radius:50px; font-size:0.88rem;
+    font-weight:700; z-index:999; white-space:nowrap;
+    box-shadow:0 6px 24px rgba(0,0,0,0.2);
+}
+
+/* ===== SCROLL TOP ===== */
+#scrollTop {
+    position:fixed; bottom:1.5rem; right:1.5rem;
+    background:var(--gold); color:var(--blanco); border:none;
+    width:40px; height:40px; border-radius:50%; font-size:1rem;
+    font-weight:900; cursor:pointer; transition:var(--tr);
+    box-shadow:0 4px 16px rgba(201,168,76,0.4); z-index:100;
+}
+#scrollTop:hover { background:var(--gold2); transform:translateY(-2px); }
+
+/* ===== FOOTER ===== */
+footer {
+    text-align:center; padding:1.5rem;
+    color:var(--dim); font-size:0.78rem;
+    border-top:1px solid var(--borde);
+    background:var(--blanco);
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    nav { display:none; }
+    .menu-btn { display:block; }
+    .cards-top { grid-template-columns:1fr; }
+    .form-row  { grid-template-columns:1fr; }
+    .cat-row { grid-template-columns:auto 1fr auto; }
+    .cat-bar-mini { display:none; }
+    .cat-pct { display:none; }
+    .historial-actions { flex-direction:column; align-items:flex-start; }
+    .tx-item { grid-template-columns:2rem 1fr auto auto; gap:0.6rem; }
+}
+
+@media (max-width: 480px) {
+    .nav-inner { padding:0.8rem 4%; }
+    section { padding:2rem 4%; }
+}
