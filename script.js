@@ -61,7 +61,7 @@ $(document).ready(function () {
 // 3. FETCH — Cargar datos externos desde archivo.json
 // ============================================================
 function cargarDatosJSON() {
-    fetch("gastos_archivo.json")
+    fetch("archivo.json")
         .then(function (res) {
             if (!res.ok) throw new Error("Error " + res.status);
             return res.json();
